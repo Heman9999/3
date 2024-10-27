@@ -2,9 +2,12 @@ package com.example.myapp
 
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
+import android.view.View
 import android.widget.TextClock
 import android.widget.TextView
 import androidx.activity.ComponentActivity
@@ -30,7 +33,9 @@ class MainActivity : ComponentActivity() {
     val TAG: String = "MyActivitys"
     val TAGS: String = "MyActivitysi"
     @RequiresApi(Build.VERSION_CODES.R)
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SetTextI18n", "ResourceType")
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SetTextI18n", "ResourceType",
+        "CutPasteId"
+    )
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -56,76 +61,78 @@ class MainActivity : ComponentActivity() {
         }
 
         try {
-            var startTV : TextView = findViewById(R.id.idTVstatus)
+            var startTV : TextView = findViewById(R.id.btnRecord)
             var stopTV : TextView = findViewById(R.id.btnStop);
             var playTV :TextView = findViewById(R.id.btnPlay)
             var stopplayTV : TextView = findViewById(R.id.btnStopPlay)
             var status : TextView = findViewById(R.id.idTVstatus);
+            var mFileName : String = ""
+            var mRecorder : MediaRecorder = MediaRecorder()
 
-//            stopTV.setBackgroundColor(getResources().getColor(R.color.));
-//            playTV.setBackgroundColor(getResources().getColor(R.color.gray));
-//            stopplayTV.setBackgroundColor(getResources().getColor(R.color.gray));
 
             stopTV.setBackgroundColor(Color.parseColor(getString(R.color.gray)))
+            playTV.setBackgroundColor(Color.parseColor(getString(R.color.gray)))
+            stopplayTV.setBackgroundColor(Color.parseColor(getString(R.color.gray)))
+
+
+
+            fun startRecording(){
+                Log.v(TAGS,"Start Recording");
+
+
+                try {
+                    stopTV.setBackgroundColor(Color.parseColor(getString(R.color.purple_200)))
+                    startTV.setBackgroundColor(Color.parseColor(getString(R.color.gray)))
+                    playTV.setBackgroundColor(Color.parseColor(getString(R.color.gray)))
+                    stopplayTV.setBackgroundColor(Color.parseColor(getString(R.color.gray)))
+
+                    mFileName = Environment.getExternalStorageDirectory().absolutePath;
+                    mFileName += "/AudioRecording.3gp"
+
+                    mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+                    mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+                    mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+
+                    mRecorder.setOutputFile(mFileName);
+                    mRecorder.prepare()
+                }catch (e :Exception){
+
+                    Log.v(TAGS,e.message.toString())
+                }
+                mRecorder.start()
+                startTV.setText("Recording Started")
+            }
+
+            startTV.setOnClickListener(object : View.OnClickListener{
+                override fun onClick(v: View?) {
+                    startRecording()
+                }
+            })
+
+            fun pauseRecording(){
+                Log.v(TAGS,"Stop Recording");
+                stopTV.setBackgroundColor(Color.parseColor(getString(R.color.gray)))
+                startTV.setBackgroundColor(Color.parseColor(getString(R.color.purple_200)))
+                playTV.setBackgroundColor(Color.parseColor(getString(R.color.purple_200)))
+
+                stopplayTV.setBackgroundColor(Color.parseColor(getString(R.color.purple_200)))
+
+                mRecorder.stop()
+                mRecorder.release()
+                status.setText("Recording Stopped");
+            }
+
+            stopTV.setOnClickListener{ pauseRecording() }
+
+
         }catch (e : Exception){
             Log.v(TAGS,e.toString())
         }
 
-    }
-    fun hello(){
-        setContent {
-            MyApplicationTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    for(name in valueArray){
-                        Greeting(
-                            names = name,
-                            modifier = Modifier.padding(start = 20.dp*increment, top = 100.dp*increment)
-                        )
-                        Log.v(TAG,name)
-                        increment = increment + 1;
-                    }
 
-                    Button(onClick = {
-                        increment = 1;
-                        valueArray += "Hello World"
-                        for(value in valueArray){
-                            Log.v(TAG, value)
-                        }
-                        hello()
-                    },Modifier.padding(start = 100.dp, top = 500.dp)){
 
-                        Text("Hello World")
-                    }
-                }
-
-            }
-        }
     }
 }
 
 
 
-
-//@Composable
-//fun TimeGraph(
-//    hoursHeader : @Composable()-> Unit,
-//    rowCount : Int,
-//    dayLabel: @Composable(Index : Int) -> Unit,
-//    sleepBar: @Composable(index : Int) -> Unit,
-//    )
-
-@Composable
-fun Greeting(names : String, modifier: Modifier = Modifier) {
-        Text(
-            text = "Hello $names!",
-            modifier = modifier
-        )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MyApplicationTheme {
-//        Greeting("Android")
-    }
-}
